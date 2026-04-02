@@ -102,13 +102,49 @@ class RoomSearchService {
     }
 }
 
-public class UseCase4RoomSearch {
+class Reservation {
+    private String guestName;
+    private String roomType;
+
+    public Reservation(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() { return guestName; }
+    public String getRoomType() { return roomType; }
+}
+
+class BookingRequestQueue {
+    private Queue<Reservation> requestQueue = new LinkedList<>();
+
+    void addRequest(Reservation reservation) {
+        requestQueue.offer(reservation);
+    }
+
+    Reservation getNextRequest() {
+        return requestQueue.poll();
+    }
+
+    boolean hasPendingRequests() {
+        return !requestQueue.isEmpty();
+    }
+}
+
+public class BookMyStayApp {
     public static void main(String[] args) {
-        System.out.println("Use Case 4: Room Search\n");
+        System.out.println("Booking Request Queue");
 
-        RoomInventory inventory = new RoomInventory();
-        RoomSearchService search = new RoomSearchService();
+        BookingRequestQueue bookingQueue = new BookingRequestQueue();
 
-        search.searchAvailableRooms(inventory);
+        bookingQueue.addRequest(new Reservation("Abhi", "Single"));
+        bookingQueue.addRequest(new Reservation("Subha", "Double"));
+        bookingQueue.addRequest(new Reservation("Vanmathi", "Suite"));
+
+        while (bookingQueue.hasPendingRequests()) {
+            Reservation next = bookingQueue.getNextRequest();
+            System.out.println("Processing booking for Guest: " + next.getGuestName() +
+                    ", Room Type: " + next.getRoomType());
+        }
     }
 }
