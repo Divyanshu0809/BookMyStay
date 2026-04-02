@@ -131,20 +131,72 @@ class BookingRequestQueue {
     }
 }
 
+class Reservation1 {
+    private String guestName;
+    private String roomType;
+
+    public Reservation1(String guestName, String roomType) {
+        this.guestName = guestName;
+        this.roomType = roomType;
+    }
+
+    public String getGuestName() { return guestName; }
+    public String getRoomType() { return roomType; }
+}
+
+class BookingRequestQueue1 {
+    private Queue<Reservation> requestQueue = new LinkedList<>();
+
+    public void addRequest(Reservation reservation) {
+        requestQueue.offer(reservation);
+    }
+
+    public Reservation getNextRequest() {
+        return requestQueue.poll();
+    }
+
+    public boolean hasPendingRequests() {
+        return !requestQueue.isEmpty();
+    }
+}
+
+class RoomAllocationService {
+    private Set<String> allocatedRoomIds = new HashSet<>();
+    private Map<String, Set<String>> assignedRoomsByType = new HashMap<>();
+
+    public void allocateRoom(Reservation reservation) {
+        String roomType = reservation.getRoomType();
+        String roomId = generateRoomId(roomType);
+
+        allocatedRoomIds.add(roomId);
+
+        assignedRoomsByType.putIfAbsent(roomType, new HashSet<>());
+        assignedRoomsByType.get(roomType).add(roomId);
+
+        System.out.println("Booking confirmed for Guest: " + reservation.getGuestName() +
+                ", Room ID: " + roomId);
+    }
+
+    private String generateRoomId(String roomType) {
+        int count = assignedRoomsByType.getOrDefault(roomType, new HashSet<>()).size() + 1;
+        return roomType + "-" + count;
+    }
+}
+
 public class BookMyStayApp {
     public static void main(String[] args) {
-        System.out.println("Booking Request Queue");
+        System.out.println("Room Allocation Processing");
 
         BookingRequestQueue bookingQueue = new BookingRequestQueue();
+        RoomAllocationService allocationService = new RoomAllocationService();
 
         bookingQueue.addRequest(new Reservation("Abhi", "Single"));
-        bookingQueue.addRequest(new Reservation("Subha", "Double"));
+        bookingQueue.addRequest(new Reservation("Subha", "Single"));
         bookingQueue.addRequest(new Reservation("Vanmathi", "Suite"));
 
         while (bookingQueue.hasPendingRequests()) {
-            Reservation next = bookingQueue.getNextRequest();
-            System.out.println("Processing booking for Guest: " + next.getGuestName() +
-                    ", Room Type: " + next.getRoomType());
+            Reservation request = bookingQueue.getNextRequest();
+            allocationService.allocateRoom(request);
         }
     }
 }
